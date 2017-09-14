@@ -1,0 +1,73 @@
+services:
+    innmind.amqp.client: '@innmind.amqp.client.logger'
+
+    innmind.amqp.client.logger:
+        class: Innmind\AMQP\Client\Logger
+        public: false
+        arguments:
+            - '@innmind.amqp.client.fluent'
+            - '@logger'
+        tags:
+            - {name: monolog.logger, channel: amqp}
+
+    innmind.amqp.client.fluent:
+        class: Innmind\AMQP\Client\Fluent
+        public: false
+        arguments:
+            - '@innmind.amqp.client.default'
+
+    innmind.amqp.client.default:
+        class: Innmind\AMQP\Client\Client
+        public: false
+        arguments:
+            - '@innmind.amqp.connection'
+
+    innmind.amqp.connection:
+        alias: 'innmind.amqp.connection.logger'
+        public: false
+
+    innmind.amqp.connection.logger:
+        class: Innmind\AMQP\Transport\Connection\Logger
+        public: false
+        arguments:
+            - '@innmind.amqp.connection.default'
+            - '@logger'
+        tags:
+            - {name: monolog.logger, channel: amqp}
+
+    innmind.amqp.connection.default:
+        class: Innmind\AMQP\Transport\Connection\Connection
+        public: false
+        factory:
+            - Innmind\AMQPBundle\Factory\ConnectionFactory
+            - make
+        arguments:
+            - tcp #transport
+            - ~ #server
+            - '@innmind.amqp.protocol'
+            - 60000 #timeout in milliseconds
+            - '@innmind.amqp.clock'
+
+    innmind.amqp.protocol:
+        alias: 'innmind.amqp.protocol.091'
+        public: false
+
+    innmind.amqp.protocol.091:
+        class: Innmind\AMQP\Transport\Protocol\v091\Protocol
+        public: false
+        arguments:
+            - '@innmind.amqp.argument_translator'
+
+    innmind.amqp.argument_translator:
+        class: Innmind\AMQP\Transport\Protocol\ArgumentTranslator\Delegate
+        public: false
+        arguments:
+            - '@innmind.amqp.argument_translator.value'
+
+    innmind.amqp.argument_translator.value:
+        class: Innmind\AMQP\Transport\Protocol\ArgumentTranslator\ValueTranslator
+        public: false
+
+    innmind.amqp.clock:
+        class: Innmind\TimeContinuum\TimeContinuum\Earth
+        public: false
