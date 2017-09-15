@@ -36,10 +36,12 @@ class InnmindAMQPExtensionTest extends TestCase
                     'exchanges' => [
                         'bundle_exchange' => [
                             'type' => 'direct',
+                            'durable' => false,
                         ],
                     ],
                     'queues' => [
                         'bundle_queue' => [
+                            'durable' => false,
                             'consumer' => 'foo',
                         ],
                     ],
