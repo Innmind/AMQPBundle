@@ -28,6 +28,7 @@ class InnmindAMQPExtensionTest extends TestCase
             'logger',
             new Definition(NullLogger::class)
         );
+        $container->set('foo', $consumer = function(){});
 
         $this->assertNull(
             $extension->load(
@@ -75,6 +76,13 @@ class InnmindAMQPExtensionTest extends TestCase
                 ->declare(
                     Queue::passive('bundle_queue')
                 )
+        );
+        $this->assertTrue(
+            $container->get('innmind.amqp.consumers')->contains('bundle_queue')
+        );
+        $this->assertSame(
+            $consumer,
+            $container->get('innmind.amqp.consumers')->get('bundle_queue')
         );
     }
 }

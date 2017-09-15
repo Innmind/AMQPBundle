@@ -77,3 +77,6 @@ services:
     innmind.amqp.clock:
         class: Innmind\TimeContinuum\TimeContinuum\Earth
         public: false
+
+    innmind.amqp.consumers:
+        class: Innmind\AMQPBundle\Consumers

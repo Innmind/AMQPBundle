@@ -41,6 +41,7 @@ final class InnmindAMQPExtension extends Extension
         }
 
         $autoDeclare = $container->getDefinition('innmind.amqp.client.auto_declare');
+        $consumers = $container->getDefinition('innmind.amqp.consumers');
 
         foreach ($config['exchanges'] as $name => $exchange) {
             $autoDeclare->addMethodCall(
@@ -53,6 +54,10 @@ final class InnmindAMQPExtension extends Extension
             $autoDeclare->addMethodCall(
                 'declareQueue',
                 [$name, $queue['durable'], $queue['exclusive'], $queue['arguments']]
+            );
+            $consumers->addMethodCall(
+                'add',
+                [$name, new Reference($queue['consumer'])]
             );
         }
 
