@@ -39,5 +39,28 @@ final class InnmindAMQPExtension extends Extension
         foreach ($config['argument_translators'] as $translator) {
             $definition->addArgument(new Reference($translator));
         }
+
+        $autoDeclare = $container->getDefinition('innmind.amqp.client.auto_declare');
+
+        foreach ($config['exchanges'] as $name => $exchange) {
+            $autoDeclare->addMethodCall(
+                'declareExchange',
+                [$name, $exchange['type'], $exchange['durable'], $exchange['arguments']]
+            );
+        }
+
+        foreach ($config['queues'] as $name => $queue) {
+            $autoDeclare->addMethodCall(
+                'declareQueue',
+                [$name, $queue['durable'], $queue['exclusive'], $queue['arguments']]
+            );
+        }
+
+        foreach ($config['bindings'] as $binding) {
+            $autoDeclare->addMethodCall(
+                'declareBinding',
+                [$binding['exchange'], $binding['queue'], $binding['routingKey'], $binding['arguments']]
+            );
+        }
     }
 }

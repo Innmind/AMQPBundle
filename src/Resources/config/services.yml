@@ -5,10 +5,16 @@ services:
         class: Innmind\AMQP\Client\Logger
         public: false
         arguments:
-            - '@innmind.amqp.client.fluent'
+            - '@innmind.amqp.client.auto_declare'
             - '@logger'
         tags:
             - {name: monolog.logger, channel: amqp}
+
+    innmind.amqp.client.auto_declare:
+        class: Innmind\AMQPBundle\Client\AutoDeclare
+        public: false
+        arguments:
+            - '@innmind.amqp.client.fluent'
 
     innmind.amqp.client.fluent:
         class: Innmind\AMQP\Client\Fluent

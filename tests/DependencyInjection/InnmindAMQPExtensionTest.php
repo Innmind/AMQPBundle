@@ -4,7 +4,13 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQPBundle\DependencyInjection;
 
 use Innmind\AMQPBundle\DependencyInjection\InnmindAMQPExtension;
-use Innmind\AMQP\Client;
+use Innmind\AMQP\{
+    Client,
+    Model\Exchange\Declaration as Exchange,
+    Model\Exchange\Type,
+    Model\Queue\Declaration as Queue,
+    Model\Queue\DeclareOk
+};
 use Symfony\Component\DependencyInjection\{
     ContainerBuilder,
     Definition
@@ -25,7 +31,22 @@ class InnmindAMQPExtensionTest extends TestCase
 
         $this->assertNull(
             $extension->load(
-                [],
+                [[
+                    'exchanges' => [
+                        'bundle_exchange' => [
+                            'type' => 'direct',
+                        ],
+                    ],
+                    'queues' => [
+                        'bundle_queue' => [
+                            'consumer' => 'foo',
+                        ],
+                    ],
+                    'bindings' => [[
+                        'exchange' => 'bundle_exchange',
+                        'queue' => 'bundle_queue',
+                    ]],
+                ]],
                 $container
             )
         );
@@ -35,6 +56,25 @@ class InnmindAMQPExtensionTest extends TestCase
             Client::class,
             $container->get('innmind.amqp.client')
         );
-        $this->assertFalse($container->get('innmind.amqp.client')->closed());
+        $client = $container->get('innmind.amqp.client');
+        $this->assertFalse($client->closed());
+        $this->assertSame(
+            $client->channel()->exchange(),
+            $client
+                ->channel()
+                ->exchange()
+                ->declare(
+                    Exchange::passive('bundle_exchange', Type::direct())
+                )
+        );
+        $this->assertInstanceOf(
+            DeclareOk::class,
+            $client
+                ->channel()
+                ->queue()
+                ->declare(
+                    Queue::passive('bundle_queue')
+                )
+        );
     }
 }
