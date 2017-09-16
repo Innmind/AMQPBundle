@@ -1,0 +1,42 @@
+{
+    "name": "innmind/amqp-bundle",
+    "type": "library",
+    "description": "Symfony bundle to integrate AMQP library",
+    "homepage": "http://github.com/Innmind/AMQPBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Baptiste Langlade",
+            "email": "langlade.baptiste@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/Innmind/AMQPBundle/issues"
+    },
+    "require": {
+        "php": "~7.1",
+        "innmind/amqp": "^1.0",
+        "symfony/dependency-injection": "~3.0",
+        "symfony/http-kernel": "~3.0",
+        "symfony/config": "~3.0",
+        "symfony/yaml": "~3.0",
+        "symfony/framework-bundle": "^3.0",
+        "symfony/console": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Innmind\\AMQPBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Innmind\\AMQPBundle\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --colors=always"
+    }
+}
