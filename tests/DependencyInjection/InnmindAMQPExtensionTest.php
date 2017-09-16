@@ -3,14 +3,20 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQPBundle\DependencyInjection;
 
-use Innmind\AMQPBundle\DependencyInjection\InnmindAMQPExtension;
+use Innmind\AMQPBundle\{
+    DependencyInjection\InnmindAMQPExtension,
+    Producer
+};
 use Innmind\AMQP\{
     Client,
     Model\Exchange\Declaration as Exchange,
     Model\Exchange\Type,
     Model\Queue\Declaration as Queue,
-    Model\Queue\DeclareOk
+    Model\Queue\DeclareOk,
+    Model\Basic\Get,
+    Model\Basic\Message\Generic
 };
+use Innmind\Immutable\Str;
 use Symfony\Component\DependencyInjection\{
     ContainerBuilder,
     Definition
@@ -86,5 +92,19 @@ class InnmindAMQPExtensionTest extends TestCase
             $consumer,
             $container->get('innmind.amqp.consumers')->get('bundle_queue')
         );
+
+        $producer = $container->get('innmind.amqp.producer.bundle_exchange');
+
+        $this->assertInstanceOf(Producer::class, $producer);
+        $this->assertSame($producer, $producer(new Generic(new Str('foobar'))));
+        $called = false;
+        $client
+            ->channel()
+            ->basic()
+            ->get(new Get('bundle_queue'))(function($message) use (&$called): void {
+                $called = true;
+                $this->assertSame('foobar', (string) $message->body());
+            });
+        $this->assertTrue($called);
     }
 }

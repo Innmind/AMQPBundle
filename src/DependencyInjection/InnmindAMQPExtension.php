@@ -3,11 +3,13 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQPBundle\DependencyInjection;
 
+use Innmind\AMQPBundle\Producer\Producer;
 use Symfony\Component\{
     HttpKernel\DependencyInjection\Extension,
     DependencyInjection\ContainerBuilder,
     DependencyInjection\Loader,
     DependencyInjection\Reference,
+    DependencyInjection\Definition,
     Config\FileLocator
 };
 
@@ -33,7 +35,8 @@ final class InnmindAMQPExtension extends Extension
             ->registerTranslators($config, $container)
             ->registerExchanges($config, $container)
             ->registerQueues($config, $container)
-            ->registerBindings($config, $container);
+            ->registerBindings($config, $container)
+            ->registerProducers($config, $container);
     }
 
     private function configureConnection(
@@ -109,6 +112,26 @@ final class InnmindAMQPExtension extends Extension
             $autoDeclare->addMethodCall(
                 'declareBinding',
                 [$binding['exchange'], $binding['queue'], $binding['routingKey'], $binding['arguments']]
+            );
+        }
+
+        return $this;
+    }
+
+    private function registerProducers(
+        array $config,
+        ContainerBuilder $container
+    ): self {
+        foreach ($config['exchanges'] as $name => $_) {
+            $container->setDefinition(
+                'innmind.amqp.producer.'.$name,
+                new Definition(
+                    Producer::class,
+                    [
+                        new Reference('innmind.amqp.client'),
+                        $name
+                    ]
+                )
             );
         }
 
