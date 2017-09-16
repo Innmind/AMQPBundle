@@ -28,20 +28,45 @@ final class InnmindAMQPExtension extends Extension
             $configs
         );
 
+        $this
+            ->configureConnection($config, $container)
+            ->registerTranslators($config, $container)
+            ->registerExchanges($config, $container)
+            ->registerQueues($config, $container)
+            ->registerBindings($config, $container);
+    }
+
+    private function configureConnection(
+        array $config,
+        ContainerBuilder $container
+    ): self {
         $container
             ->getDefinition('innmind.amqp.connection.default')
             ->replaceArgument(1, $config['server'])
             ->replaceArgument(3, $config['server']['timeout'])
             ->replaceArgument(4, new Reference($config['clock']));
 
+        return $this;
+    }
+
+    private function registerTranslators(
+        array $config,
+        ContainerBuilder $container
+    ): self {
         $definition = $container->getDefinition('innmind.amqp.argument_translator');
 
         foreach ($config['argument_translators'] as $translator) {
             $definition->addArgument(new Reference($translator));
         }
 
+        return $this;
+    }
+
+    private function registerExchanges(
+        array $config,
+        ContainerBuilder $container
+    ): self {
         $autoDeclare = $container->getDefinition('innmind.amqp.client.auto_declare');
-        $consumers = $container->getDefinition('innmind.amqp.consumers');
 
         foreach ($config['exchanges'] as $name => $exchange) {
             $autoDeclare->addMethodCall(
@@ -49,6 +74,16 @@ final class InnmindAMQPExtension extends Extension
                 [$name, $exchange['type'], $exchange['durable'], $exchange['arguments']]
             );
         }
+
+        return $this;
+    }
+
+    private function registerQueues(
+        array $config,
+        ContainerBuilder $container
+    ): self {
+        $autoDeclare = $container->getDefinition('innmind.amqp.client.auto_declare');
+        $consumers = $container->getDefinition('innmind.amqp.consumers');
 
         foreach ($config['queues'] as $name => $queue) {
             $autoDeclare->addMethodCall(
@@ -61,11 +96,22 @@ final class InnmindAMQPExtension extends Extension
             );
         }
 
+        return $this;
+    }
+
+    private function registerBindings(
+        array $config,
+        ContainerBuilder $container
+    ): self {
+        $autoDeclare = $container->getDefinition('innmind.amqp.client.auto_declare');
+
         foreach ($config['bindings'] as $binding) {
             $autoDeclare->addMethodCall(
                 'declareBinding',
                 [$binding['exchange'], $binding['queue'], $binding['routingKey'], $binding['arguments']]
             );
         }
+
+        return $this;
     }
 }
