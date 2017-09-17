@@ -21,7 +21,8 @@
         "symfony/config": "~3.0",
         "symfony/yaml": "~3.0",
         "symfony/framework-bundle": "^3.0",
-        "symfony/console": "^3.0"
+        "symfony/console": "^3.0",
+        "innmind/socket": "^1.1"
     },
     "autoload": {
         "psr-4": {

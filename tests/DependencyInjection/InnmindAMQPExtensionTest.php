@@ -39,6 +39,12 @@ class InnmindAMQPExtensionTest extends TestCase
         $this->assertNull(
             $extension->load(
                 [[
+                    'server' => [
+                        'transport' => [
+                            'name' => 'tcp',
+                            'options' => ['verfify_peer' => true],
+                        ],
+                    ],
                     'exchanges' => [
                         'bundle_exchange' => [
                             'type' => 'direct',

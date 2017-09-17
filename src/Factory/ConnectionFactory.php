@@ -35,8 +35,14 @@ final class ConnectionFactory
         int $timeout,
         TimeContinuumInterface $clock
     ): Connection {
+        $transport = Transport::$transport();
+
+        foreach ($server['transport']['options'] as $key => $value) {
+            $transport = $transport->withOption($key, $value);
+        }
+
         return new Connection(
-            Transport::$transport(),
+            $transport,
             new Url(
                 new NullScheme,
                 new Authority(

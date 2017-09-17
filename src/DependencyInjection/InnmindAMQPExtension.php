@@ -45,6 +45,7 @@ final class InnmindAMQPExtension extends Extension
     ): self {
         $container
             ->getDefinition('innmind.amqp.connection.default')
+            ->replaceArgument(0, $config['server']['transport']['name'])
             ->replaceArgument(1, $config['server'])
             ->replaceArgument(3, $config['server']['timeout'])
             ->replaceArgument(4, new Reference($config['clock']));

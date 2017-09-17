@@ -33,7 +33,7 @@ Then you need to declare the exchanges and queues you want to use:
 
 ```yml
 innmind_amqp:
-    connection:
+    server:
         host: localhost # default
         port: 5672 # default
         user: guest # default
