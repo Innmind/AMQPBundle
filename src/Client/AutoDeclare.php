@@ -102,5 +102,6 @@ final class AutoDeclare implements Client
         $this->bindings->foreach(static function(Binding $command) use ($channel): void {
             $channel->queue()->bind($command);
         });
+        $this->declared = true;
     }
 }
