@@ -36,7 +36,8 @@ final class InnmindAMQPExtension extends Extension
             ->registerExchanges($config, $container)
             ->registerQueues($config, $container)
             ->registerBindings($config, $container)
-            ->registerProducers($config, $container);
+            ->registerProducers($config, $container)
+            ->registerSignalAwareClient($config, $container);
     }
 
     private function configureConnection(
@@ -133,6 +134,20 @@ final class InnmindAMQPExtension extends Extension
                         $name
                     ]
                 )
+            );
+        }
+
+        return $this;
+    }
+
+    private function registerSignalAwareClient(
+        array $config,
+        ContainerBuilder $container
+    ): self {
+        if ($config['handle_posix_signals'] === true) {
+            $container->setAlias(
+                'innmind.amqp.client',
+                'innmind.amqp.client.signal_aware'
             );
         }
 

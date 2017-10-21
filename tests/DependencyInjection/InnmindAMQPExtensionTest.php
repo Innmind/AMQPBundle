@@ -68,7 +68,7 @@ class InnmindAMQPExtensionTest extends TestCase
         $container->compile();
 
         $this->assertInstanceOf(
-            Client::class,
+            Client\SignalAware::class,
             $container->get('innmind.amqp.client')
         );
         $client = $container->get('innmind.amqp.client');
@@ -112,5 +112,31 @@ class InnmindAMQPExtensionTest extends TestCase
                 $this->assertSame('foobar', (string) $message->body());
             });
         $this->assertTrue($called);
+    }
+
+    public function testLoadWithoutHandlingPosixSignals()
+    {
+        $extension = new InnmindAMQPExtension;
+        $container = new ContainerBuilder;
+        $container->setDefinition(
+            'logger',
+            new Definition(NullLogger::class)
+        );
+        $container->set('foo', $consumer = function(){});
+
+        $this->assertNull(
+            $extension->load(
+                [[
+                    'handle_posix_signals' => false,
+                ]],
+                $container
+            )
+        );
+        $container->compile();
+
+        $this->assertInstanceOf(
+            Client\Logger::class,
+            $container->get('innmind.amqp.client')
+        );
     }
 }

@@ -125,6 +125,9 @@ final class Configuration implements ConfigurationInterface
                     ->info('Service id of the clock to use')
                     ->defaultValue('innmind.amqp.clock')
                 ->end()
+                ->booleanNode('handle_posix_signals')
+                    ->defaultValue(true)
+                ->end()
             ->end();
 
         return $treeBuilder;

@@ -1,6 +1,12 @@
 services:
     innmind.amqp.client: '@innmind.amqp.client.logger'
 
+    innmind.amqp.client.signal_aware:
+        class: Innmind\AMQP\Client\SignalAware
+        public: false
+        arguments:
+            - '@innmind.amqp.client.logger'
+
     innmind.amqp.client.logger:
         class: Innmind\AMQP\Client\Logger
         public: false
