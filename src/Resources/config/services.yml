@@ -89,5 +89,7 @@ services:
 
     innmind.amqp.listener.close:
         class: Innmind\AMQPBundle\EventListener\CloseListener
+        arguments:
+            - '@innmind.amqp.client'
         tags:
             - { name: kernel.event_subscriber }
