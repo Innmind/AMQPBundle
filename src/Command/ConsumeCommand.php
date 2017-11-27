@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQPBundle\Command;
 
-use Innmind\AMQP\Model\Basic\Consume;
+use Innmind\AMQP\Model\Basic\{
+    Consume,
+    Qos
+};
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{
     Input\InputInterface,
@@ -22,7 +25,8 @@ final class ConsumeCommand extends ContainerAwareCommand
             ->setName('innmind:amqp:consume')
             ->setDescription('Will process messages from the given queue')
             ->addArgument('queue', InputArgument::REQUIRED)
-            ->addArgument('number', InputArgument::OPTIONAL, 'The number of messages to process');
+            ->addArgument('number', InputArgument::OPTIONAL, 'The number of messages to process')
+            ->addArgument('prefetch', InputArgument::OPTIONAL, 'The number of messages to prefetch');
     }
 
     /**
@@ -31,20 +35,27 @@ final class ConsumeCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $queue = $input->getArgument('queue');
+        $number = $input->getArgument('number');
+        $prefetch = $input->getArgument('prefetch');
         $consume = $this
             ->getContainer()
             ->get('innmind.amqp.consumers')
             ->get($queue);
 
-        $consumer = $this
+        $basic = $this
             ->getContainer()
             ->get('innmind.amqp.client')
             ->channel()
-            ->basic()
-            ->consume(new Consume($queue));
+            ->basic();
 
-        if ($input->getArgument('number')) {
-            $consumer->take((int) $input->getArgument('number'));
+        if (!is_null($number) || !is_null($prefetch)) {
+            $basic->qos(new Qos(0, (int) ($prefetch ?? $number)));
+        }
+
+        $consumer = $basic->consume(new Consume($queue));
+
+        if (!is_null($number)) {
+            $consumer->take((int) $number);
         }
 
         $consumer->foreach($consume);

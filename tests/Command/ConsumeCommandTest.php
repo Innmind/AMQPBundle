@@ -83,6 +83,66 @@ class ConsumeCommandTest extends TestCase
         $this->assertSame(2, $calls);
     }
 
+    public function testConsumeByPrefetchingTenMessages()
+    {
+        $extension = new InnmindAMQPExtension;
+        $container = new ContainerBuilder;
+        $container->setDefinition(
+            'logger',
+            new Definition(NullLogger::class)
+        );
+        $calls = 0;
+        $container->set('foo', $consumer = function($message) use (&$calls): void {
+            ++$calls;
+            $this->assertSame('foobar', (string) $message->body());
+        });
+
+        $extension->load(
+            [[
+                'exchanges' => [
+                    'bundle_exchange' => [
+                        'type' => 'direct',
+                        'durable' => false,
+                    ],
+                ],
+                'queues' => [
+                    'bundle_queue' => [
+                        'durable' => false,
+                        'consumer' => 'foo',
+                    ],
+                ],
+                'bindings' => [[
+                    'exchange' => 'bundle_exchange',
+                    'queue' => 'bundle_queue',
+                ]],
+            ]],
+            $container
+        );
+        $container->compile();
+
+        foreach (range(0, 30) as $i) {
+            $container
+                ->get('innmind.amqp.client')
+                ->channel()
+                ->basic()
+                ->publish(
+                    (new Publish(new Generic(new Str('foobar'))))->to('bundle_exchange'));
+        }
+
+        $command = new ConsumeCommand;
+
+        $this->assertInstanceOf(ContainerAwareCommand::class, $command);
+
+        $command->setContainer($container);
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(array(
+            'queue' => 'bundle_queue',
+            'number' => '20',
+            'prefetch' => '10',
+        ));
+        $this->assertSame(20, $calls);
+    }
+
     public function testConsumeInfiniteMessages()
     {
         $extension = new InnmindAMQPExtension;
