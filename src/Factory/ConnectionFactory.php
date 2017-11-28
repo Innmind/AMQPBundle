@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQPBundle\Factory;
 
 use Innmind\AMQP\Transport\{
-    Connection\Connection,
+    Connection\Lazy,
     Protocol
 };
 use Innmind\Socket\Internet\Transport;
@@ -34,14 +34,14 @@ final class ConnectionFactory
         Protocol $protocol,
         int $timeout,
         TimeContinuumInterface $clock
-    ): Connection {
+    ): Lazy {
         $transport = Transport::$transport();
 
         foreach ($server['transport']['options'] as $key => $value) {
             $transport = $transport->withOption($key, $value);
         }
 
-        return new Connection(
+        return new Lazy(
             $transport,
             new Url(
                 new NullScheme,
