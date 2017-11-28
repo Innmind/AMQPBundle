@@ -48,7 +48,7 @@ services:
             - {name: monolog.logger, channel: amqp}
 
     innmind.amqp.connection.default:
-        class: Innmind\AMQP\Transport\Connection\Connection
+        class: Innmind\AMQP\Transport\Connection\Lazy
         public: false
         factory:
             - Innmind\AMQPBundle\Factory\ConnectionFactory
